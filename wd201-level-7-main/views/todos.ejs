@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <title><%= title %></title>
+    <script>
+        var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        function updateTodo(id, state) {
+            fetch(`/todos/${id}`, {
+                method: "put",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    "_csrf":token,
+                    "completed":state
+                })
+            }).then((res)=>{
+                if (res.ok) {
+                    window.location.reload();
+                }
+            }).catch((err)=> console.error(err))
+        }
+        function deleteTodo(id) {
+            fetch(`/todos/${id}`, {
+                method: "delete",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                    "_csrf":token
+                })
+            }).then((res)=>{
+                if (res.ok) {
+                    window.location.reload();
+                }
+            }).catch((err)=> console.error(err))
+        }
+    </script>
+</head>
+<body style="background-image: url('bg4.jpg');
+/* background-color: #cccccc; */
+height: 500px;
+background-position: center;
+background-repeat: repeat-y;
+background-size: cover;
+position: relative;">
+    <!-- <img src="bg4.jpg" alt="" style="position: absolute; top: 0px; height: 100%;width: 100%;z-index: -1;"> -->
+    <div style="margin-top: 100px;" class="grid grid-cols-6">
+        <div class="col-start-3 col-span-2">
+            <%- include('header.ejs') %>
+            <br>
+            <p style="    color: #ff00e6;
+            font-weight: bolder;
+            background-color: black;
+            padding: 5px;
+            border: 3px solid white;
+            border-radius: 10px;
+            text-align: center;">Hello <span style="color: #00ff5a;"><%= userName %></span></p><br>
+            <a style="color: white;background-color: black;border: 3px solid white;border-radius: 5px;padding: 5px;" href="/signout">Sign out</a>
+            <form action="/todos" method="post">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <div class="flex gap-2 py-4">
+                    <div class="flex-auto">
+                        <input style="background-color: #6f6f6f;color: white;" type="text" name="title" placeholder="What's next?" class="border border-gray-300 text-gray-900 w-full rounded p-2 text-sm" required />
+                    </div>
+                    <div class="flex-auto">
+                        <input style="background-color: #6f6f6f;color: white;" type="date" name="dueDate" class="border border-gray-300 text-gray-900 w-full rounded p-2 text-sm leading-4" />
+                    </div>
+                    <div class="flex-none">
+                        <button type="submit" style="background-color: blue; color: white;padding: 5px;border: 3px solid white; font-weight: bolder; border-radius: 7px;">Add To-Do</button>
+                    </div>
+                </div>
+            </form>
+            <div>
+                <% if (messages && messages.error && messages.error.length > 0) { %>
+                    <% for(var i=0; i<messages.error.length; i++) { %>
+                        <p class="bg-red-100 my-3 list-none rounded px-4 py-2"><%= messages.error[i] %></p>
+                    <% } %>
+                <% } %>
+            </div>
+            <div>
+                <%- include('todo.ejs', {title: "Overdue", data: overDue}) %>
+                <%- include('todo.ejs', {title: "Due Today", data: dueToday}) %>
+                <%- include('todo.ejs', {title: "Due Later", data: dueLater}) %>
+                <%- include('todo.ejs', {title: "Completed Items", data: completedItems}) %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
